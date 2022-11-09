@@ -57,7 +57,7 @@ class Config:
     img_channel = 3
     img_shape = (img_height, img_width, img_channel)
 
-    box_margin = 50
+    box_margin = 100
     box_alpha = 0.7
     model_config = {
     'model_complexity': 1,
@@ -110,6 +110,8 @@ cap.set(cv2.CAP_PROP_FPS, 30)
 
 record_flag = -1
 
+last_frame_failed = False
+
 camera_direction = 0
 with mp_hands.Hands(
     static_image_mode = True,
@@ -141,55 +143,60 @@ with mp_hands.Hands(
                 landmark_array = get_landmark_array(hand_landmarks, cropped_image.shape, normal_x, normal_y)
                 p1, p2 = get_bounding_rect(landmark_array, p1, p2)
 
-                rotated_normalized_img, rotated_normalized_landmark = mediapipe_out_to_blazehand_in2(
-                    image,
-                    landmark_array,
-                    (p1.x, p1.y, p2.x, p2.y)
-                )
-                
-           
-                if record_flag > 0 :
-                    image_name = os.path.join(
-                        ".",
-                        data_label,
-                        f"{time.time()}_{data_label}.png",
+                if not last_frame_failed :
+                    rotated_normalized_img, rotated_normalized_landmark = mediapipe_out_to_blazehand_in2(
+                        image,
+                        landmark_array,
+                        (p1.x, p1.y, p2.x, p2.y)
                     )
-                    print(
-                        next(index_iterator),
-                        "{0:3d} {0:3d}".format(
-                            rotated_normalized_img.shape[0]
-                        ),
-                        image_name
-                    )
-                    cv2.imwrite(
-                        image_name,
-                        rotated_normalized_img,
-                    )
-                    with open(image_name.replace("png", "pkl"), "wb") as fp :
-                        pickle.dump(
-                            torch.Tensor(rotated_normalized_landmark),
-                            fp
+                    
+            
+                    if record_flag > 0 :
+                        image_name = os.path.join(
+                            ".",
+                            data_label,
+                            f"{time.time()}_{data_label}.png",
                         )
+                        print(
+                            next(index_iterator),
+                            "{0:3d} {0:3d}".format(
+                                rotated_normalized_img.shape[0]
+                            ),
+                            image_name
+                        )
+                        cv2.imwrite(
+                            image_name,
+                            rotated_normalized_img,
+                        )
+                        with open(image_name.replace("png", "pkl"), "wb") as fp :
+                            pickle.dump(
+                                torch.Tensor(rotated_normalized_landmark),
+                                fp
+                            )
 
 
-                visualization.draw_normalized_hand_landmarks_on_cropped(
-                    rotated_normalized_img,
-                    torch.Tensor(rotated_normalized_landmark)
-                )
+                    visualization.draw_normalized_hand_landmarks_on_cropped(
+                        rotated_normalized_img,
+                        torch.Tensor(rotated_normalized_landmark)
+                    )
 
+            last_frame_failed = False
 
         else:
             p1, p2 = point(0, 0), point(Config.img_width - 1, Config.img_height - 1)
+            last_frame_failed = True
 
         if results.multi_hand_landmarks:
-
-            draw_landmarks(image, landmark_array, 1)
-            image = np.hstack(
-            (
-                    image,
-                    cv2.resize(rotated_normalized_img, (image.shape[0], image.shape[0]))
-                )
-            )        
+            try :
+                draw_landmarks(image, landmark_array, 1)
+                image = np.hstack(
+                (
+                        image,
+                        cv2.resize(rotated_normalized_img, (image.shape[0], image.shape[0]))
+                    )
+                )        
+            except : 
+                pass
 
 
         cv2.imshow(
