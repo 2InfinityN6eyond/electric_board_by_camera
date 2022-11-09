@@ -146,10 +146,6 @@ with mp_hands.Hands(
                     landmark_array,
                     (p1.x, p1.y, p2.x, p2.y)
                 )
-                visualization.draw_normalized_hand_landmarks_on_cropped(
-                    rotated_normalized_img,
-                    torch.Tensor(rotated_normalized_landmark)
-                )
                 
            
                 if record_flag > 0 :
@@ -175,6 +171,11 @@ with mp_hands.Hands(
                             fp
                         )
 
+
+                visualization.draw_normalized_hand_landmarks_on_cropped(
+                    rotated_normalized_img,
+                    torch.Tensor(rotated_normalized_landmark)
+                )
 
 
         else:
