@@ -4,9 +4,7 @@ import cv2
 import sys
 
 from blazebase import resize_pad, denormalize_detections
-from blazeface import BlazeFace
 from blazepalm import BlazePalm
-from blazeface_landmark import BlazeFaceLandmark
 from blazehand_landmark import BlazeHandLandmark
 
 from visualization import draw_detections, draw_landmarks, draw_roi, HAND_CONNECTIONS, FACE_CONNECTIONS
@@ -57,6 +55,8 @@ while True :
         frame, xc, yc, theta, scale
     )
 
+    if len(theta) > 0 :
+        print(np.rad2deg(float(theta[0])))
     #print(img.shape)
 
     flags2, handed2, normalized_landmarks2 = hand_regressor(
@@ -71,9 +71,9 @@ while True :
 
     for i in range(len(flags2)):
         landmark, flag = landmarks2[i], flags2[i]
-        if flag>.5:
-            draw_landmarks(frame, landmark[:,:2], HAND_CONNECTIONS, size=2)
-            pass
+        #if flag>.5:
+        draw_landmarks(frame, landmark[:,:2], HAND_CONNECTIONS, size=2)
+            
     draw_roi(frame, box2)
     draw_detections(frame, palm_detections)
 

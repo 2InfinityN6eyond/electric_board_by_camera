@@ -171,8 +171,10 @@ class BlazeLandmark(BlazeBase):
     def extract_roi(self, frame, xc, yc, theta, scale):
 
         # take points on unit square and transform them according to the roi
-        points = torch.tensor([[-1, -1, 1, 1],
-                            [-1, 1, -1, 1]], device=scale.device).view(1,2,4)
+        points = torch.tensor([
+            [-1, -1, 1, 1],
+            [-1, 1, -1, 1]
+        ], device=scale.device).view(1,2,4)
         points = points * scale.view(-1,1,1)/2
         theta = theta.view(-1, 1, 1)
         R = torch.cat((
@@ -208,7 +210,6 @@ class BlazeLandmark(BlazeBase):
         return imgs, affines, points
 
     def denormalize_landmarks(self, landmarks, affines):
-        print()
         landmarks[:,:,:2] *= self.resolution
         for i in range(len(landmarks)) :
             landmark, affine = landmarks[i], affines[i]

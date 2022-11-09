@@ -1,5 +1,8 @@
+
 import numpy as np
 import cv2 as cv
+import cv2
+
 
 def calc_bounding_rect(image, landmarks):
     image_width, image_height = image.shape[1], image.shape[0]
@@ -34,6 +37,11 @@ def calc_landmark_list(image, landmarks):
 
     return landmark_point
 
+def calc_theta(landmarks) :
+    normalized_landmark_list = calc_normalized_landmark_list(landmarks)
+    palm_pos = normalized_landmark_list[0][:2]
+    fing_pos = normalized_landmark_list[[8, 12, 16, 20], :2].mean(axis = 0)
+    return np.arctan2(*(palm_pos - fing_pos))
 
 def calc_normalized_landmark_list(landmarks):
     landmark_point = []
@@ -48,6 +56,24 @@ def calc_normalized_landmark_list(landmarks):
 
     return np.array(landmark_point)
 
+def rotate_image_and_landmark(
+    image,
+    landmark,   # denormalized
+    theta,      # radian
+    cx,         # center x, denormalized
+    cy          # center y, denormalized
+) :
+    rot_matrix_img = cv2.getRotationMatrix2D(
+        (cx, cy), np.rad2deg(theta), 1.0
+    )
+    rotated_image = cv2.warpAffine(
+        image, rot_matrix_img, (image.shape[1], image.shape[0])
+    )
+    
+    R = np.array([[np.cos(-theta), -np.sin(-theta)],
+                  [np.sin(-theta),  np.cos(-theta)]])
+    o = np.atleast_2d((cx, cy))
+    return rotated_image, np.squeeze((R @ (landmark.T-o.T) + o.T).T)
 
 
 def draw_landmarks(
@@ -203,3 +229,18 @@ def draw_info(image, fps, mode, number):
                        cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
                        cv.LINE_AA)
     return image
+
+
+# https://github.com/metalwhale/hand_tracking/blob/b2a650d61b4ab917a2367a05b85765b81c0564f2/run.py
+#        8   12  16  20
+#        |   |   |   |
+#        7   11  15  19
+#    4   |   |   |   |
+#    |   6   10  14  18
+#    3   |   |   |   |
+#    |   5---9---13--17
+#    2    \         /
+#     \    \       /
+#      1    \     /
+#       \    \   /
+#        ------0-

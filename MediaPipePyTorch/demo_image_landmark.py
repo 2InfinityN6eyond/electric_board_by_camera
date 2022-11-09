@@ -12,7 +12,6 @@ from blazehand_landmark import BlazeHandLandmark
 from visualization import draw_detections, draw_landmarks, draw_roi, HAND_CONNECTIONS, FACE_CONNECTIONS
 
 gpu = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-torch.set_grad_enabled(False)
 
 back_detector = True
 
