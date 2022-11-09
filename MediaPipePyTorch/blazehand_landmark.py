@@ -21,7 +21,7 @@ class BlazeHandLandmark(BlazeLandmark):
                 in_channels=3, out_channels=24,
                 kernel_size=3, stride=2, padding=0, bias=True
             ),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
 
             BlazeBlock(24, 24, 5),
             BlazeBlock(24, 24, 5),
@@ -91,7 +91,13 @@ class BlazeHandLandmark(BlazeLandmark):
         if x.shape[0] == 0:
             return torch.zeros((0,)), torch.zeros((0,)), torch.zeros((0, 21, 3))
 
+        #print(x.shape, x.min(), x.mean(), x.max(), x.dtype)
+        
         x = F.pad(x, (0, 1, 0, 1), "constant", 0)
+
+        #print(x.shape, x.min(), x.mean(), x.max(), x.dtype)
+
+        #print()
 
         x = self.backbone1(x)
         y = self.backbone2(x)
@@ -112,5 +118,14 @@ class BlazeHandLandmark(BlazeLandmark):
         hand_flag = self.hand_flag(x).view(-1).sigmoid()
         handed = self.handed(x).view(-1).sigmoid()
         landmarks = self.landmarks(x).view(-1, 21, 3) / 256
+
+        '''
+        print(
+            x.shape,
+            self.landmarks(x).shape,
+            landmarks.shape,
+        )
+        '''
+        #print(landmarks)
 
         return hand_flag, handed, landmarks

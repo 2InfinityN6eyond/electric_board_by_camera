@@ -163,4 +163,6 @@ class BlazePalm(BlazeDetector):
 
         r = torch.cat((r3, r2, r1), dim=1)  # (b, 896, 16)
 
+
         return [r, c]
+        # r : raw_box_tensor, c : score_tensor

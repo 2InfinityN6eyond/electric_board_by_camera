@@ -57,14 +57,17 @@ while True :
         frame, xc, yc, theta, scale
     )
 
-    
-    flags2, handed2, normalized_landmarks2 = hand_regressor(img.to(gpu))
+    #print(img.shape)
+
+    flags2, handed2, normalized_landmarks2 = hand_regressor(
+        img.to(gpu)
+    )
     landmarks2 = hand_regressor.denormalize_landmarks(
         normalized_landmarks2.cpu(), affine2
     )
 
-    print(flags2, handed2, normalized_landmarks2.shape)
-    print()
+    #print(flags2, handed2, normalized_landmarks2.shape)
+    #print()
 
     for i in range(len(flags2)):
         landmark, flag = landmarks2[i], flags2[i]

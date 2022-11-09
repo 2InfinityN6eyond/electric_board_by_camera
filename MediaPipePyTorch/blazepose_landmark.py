@@ -199,5 +199,4 @@ class BlazePoseLandmark(BlazeLandmark):
         out = self.block5(out)
         flag = self.flag(out).view(-1).sigmoid()
         landmarks = self.landmarks(out).view(batch,31,4) / 256
-
         return flag, landmarks, seg

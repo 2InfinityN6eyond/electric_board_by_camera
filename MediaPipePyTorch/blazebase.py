@@ -85,7 +85,9 @@ class BlazeBlock(nn.Module):
         # TFLite uses slightly different padding than PyTorch 
         # on the depthwise conv layer when the stride is 2.
         if stride == 2:
-            self.max_pool = nn.MaxPool2d(kernel_size=stride, stride=stride)
+            self.max_pool = nn.MaxPool2d(
+                kernel_size=stride, stride=stride
+            )
             padding = 0
         else:
             padding = (kernel_size - 1) // 2
@@ -105,7 +107,7 @@ class BlazeBlock(nn.Module):
             self.skip_proj = None
 
         if act == 'relu':
-            self.act = nn.ReLU(inplace=True)
+            self.act = nn.ReLU()
         elif act == 'prelu':
             self.act = nn.PReLU(out_channels)
         else:
@@ -144,7 +146,7 @@ class FinalBlazeBlock(nn.Module):
                       kernel_size=1, stride=1, padding=0, bias=True),
         )
 
-        self.act = nn.ReLU(inplace=True)
+        self.act = nn.ReLU()
 
     def forward(self, x):
         h = F.pad(x, (0, 2, 0, 2), "constant", 0)
@@ -161,8 +163,7 @@ class BlazeBase(nn.Module):
     
     def load_weights(self, path):
         self.load_state_dict(torch.load(path))
-        self.eval()        
-
+        self.eval()
 
 class BlazeLandmark(BlazeBase):
     """ Base class for landmark models. """
@@ -207,8 +208,9 @@ class BlazeLandmark(BlazeBase):
         return imgs, affines, points
 
     def denormalize_landmarks(self, landmarks, affines):
+        print()
         landmarks[:,:,:2] *= self.resolution
-        for i in range(len(landmarks)):
+        for i in range(len(landmarks)) :
             landmark, affine = landmarks[i], affines[i]
             landmark = (affine[:,:2] @ landmark[:,:2].T + affine[:,2:]).T
             landmarks[i,:,:2] = landmark
