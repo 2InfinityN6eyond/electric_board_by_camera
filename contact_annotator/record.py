@@ -5,6 +5,7 @@ import cv2
 import pickle
 import mediapipe as mp
 import torch
+import pickle 
 
 from utils import *
 import utils, visualization
@@ -149,27 +150,59 @@ with mp_hands.Hands(
                     rotated_normalized_img,
                     torch.Tensor(rotated_normalized_landmark)
                 )
-                cv2.imshow("rot2", rotated_normalized_img)
+                
+           
+                if record_flag > 0 :
+                    image_name = os.path.join(
+                        ".",
+                        data_label,
+                        f"{time.time()}_{data_label}.png",
+                    )
+                    print(
+                        next(index_iterator),
+                        "{0:3d} {0:3d}".format(
+                            rotated_normalized_img.shape[0]
+                        ),
+                        image_name
+                    )
+                    cv2.imwrite(
+                        image_name,
+                        rotated_normalized_img,
+                    )
+                    with open(image_name.replace("png", "pkl"), "wb") as fp :
+                        pickle.dump(
+                            torch.Tensor(rotated_normalized_landmark),
+                            fp
+                        )
+
+
 
         else:
             p1, p2 = point(0, 0), point(Config.img_width - 1, Config.img_height - 1)
 
+        if results.multi_hand_landmarks:
 
-        cv2.imshow('MediaPipe Hands', image)
+            draw_landmarks(image, landmark_array, 1)
+            image = np.hstack(
+            (
+                    image,
+                    cv2.resize(rotated_normalized_img, (image.shape[0], image.shape[0]))
+                )
+            )        
+
+
+        cv2.imshow(
+            'MediaPipe Hands',
+            cv2.resize(
+                image,
+                (image.shape[1] // 2, image.shape[0] // 2)
+            )
+        )
         key = cv2.waitKey(5)
         if key & 0xFF == 27 :
             break
         if key == ord(" ") :
             record_flag *= -1
         
-        if key == ord("0") :
-            camera_direction = 0
-        if key == ord("1") :
-            camera_direction = 1
-        if key == ord("2") :
-            camera_direction = 2
-        if key == ord("3") :
-            camera_direction = 3
-
 
     cap.release()
