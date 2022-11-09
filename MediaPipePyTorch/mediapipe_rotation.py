@@ -1,8 +1,11 @@
 import time
 import cv2
 import mediapipe as mp
+import torch
 
 from utils import *
+import visualization
+
 
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
@@ -67,6 +70,7 @@ with mp_hands.Hands(
                 bbox_height *= 2
 
                 theta = calc_theta(hand_landmarks)
+
                 rotated_img, rotated_landmark = rotate_image_and_landmark(
                     image,
                     np.array(landmark_list),
@@ -74,14 +78,21 @@ with mp_hands.Hands(
                     bbox_middle_x,
                     bbox_middle_y
                 )
-
                 draw_landmarks(
                     rotated_img,
-                    np.array(rotated_landmark).astype(np.int32)
+                    rotated_landmark.astype(np.int32)
                 )
-
                 cv2.imshow("rot", rotated_img)
 
+                rotated_normalized_img, rotated_normalized_landmark = mediapipe_out_to_blazehand_in(
+                    image,
+                    hand_landmarks
+                )
+                visualization.draw_normalized_hand_landmarks_on_cropped(
+                    rotated_normalized_img,
+                    torch.Tensor(rotated_normalized_landmark)
+                )
+                cv2.imshow("rot2", rotated_normalized_img)
 
                 draw_landmarks(image, landmark_list, 1)
                 cv2.imshow("cropped", image[bbox_t:bbox_b , bbox_l:bbox_r])

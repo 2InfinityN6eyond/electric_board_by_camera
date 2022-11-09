@@ -56,6 +56,46 @@ def calc_normalized_landmark_list(landmarks):
 
     return np.array(landmark_point)
 
+def mediapipe_out_to_blazehand_in(
+    image,
+    landmark, # direct from mediapipe
+) :
+    """
+    return landmark : normalized.
+    """
+    bbox_l, bbox_t, bbox_r, bbox_b = calc_bounding_rect(image, landmark)
+    landmark_arr = np.array(
+        calc_landmark_list(image, landmark)
+    )
+
+    bbox_height = int((bbox_b - bbox_t) * 1.2)
+    bbox_width  = int((bbox_r - bbox_l) * 1.2)
+    
+    bbox_height = max(bbox_height, bbox_width)
+    bbox_width  = max(bbox_height, bbox_width)
+
+    bbox_middle_y = (bbox_t + bbox_b) // 2
+    bbox_middle_x = (bbox_l + bbox_r) // 2
+
+    bbox_t = max(bbox_middle_y - bbox_height, 0)
+    bbox_l = max(bbox_middle_x - bbox_width, 0)
+    bbox_b = min(bbox_middle_y + bbox_height, image.shape[0]-1)
+    bbox_r = min(bbox_middle_x + bbox_width, image.shape[1]-1)
+
+    bbox_width *= 2
+    bbox_height *= 2
+
+    rotated_image, rotated_landmark = rotate_image_and_landmark(
+        image[bbox_t:bbox_b , bbox_l:bbox_r],
+        landmark_arr - np.array([[bbox_l, bbox_t]]),
+        -calc_theta(landmark),
+        bbox_width // 2,
+        bbox_height // 2
+    )
+
+    return cv2.resize(rotated_image, (256, 256)), rotated_landmark / np.array([rotated_image.shape[1], rotated_image.shape[0]])
+
+
 def rotate_image_and_landmark(
     image,
     landmark,   # denormalized
