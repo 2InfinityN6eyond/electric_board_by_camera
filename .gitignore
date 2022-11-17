@@ -3,3 +3,6 @@
 *.pkl
 *.jpeg
 *.pkl
+*.pth
+*.zip
+

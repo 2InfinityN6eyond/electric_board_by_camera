@@ -5,10 +5,10 @@ import torch.nn.functional as F
 
 from blazebase import BlazeLandmark, BlazeBlock
 
-class BlazeHandLandmark(BlazeLandmark):
+class BlazeHandContact(BlazeLandmark):
     """The hand landmark model from MediaPipe."""
     def __init__(self):
-        super(BlazeHandLandmark, self).__init__()
+        super(BlazeHandContact, self).__init__()
 
         # size of ROIs used for input
         self.resolution = 256
@@ -85,6 +85,8 @@ class BlazeHandLandmark(BlazeLandmark):
         self.hand_flag = nn.Conv2d(288, 1, 2, bias=True)
         self.handed = nn.Conv2d(288, 1, 2, bias=True)
         self.landmarks = nn.Conv2d(288, 63, 2, bias=True)
+
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
         if x.shape[0] == 0:
